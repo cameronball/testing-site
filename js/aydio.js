@@ -170,19 +170,28 @@
     // Function to load the html2canvas library dynamically
     function loadHtml2Canvas(callback) {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; // Ensure this is the correct URL for the latest version
         script.onload = callback;
+        script.onerror = function() {
+            console.error('Failed to load html2canvas library.');
+        };
         document.head.appendChild(script);
     }
 
     // Function to take a screenshot using html2canvas
     function takeScreenshot() {
-        html2canvas(document.body).then(function(canvas) {
-            // Convert canvas to data URL and log it
-            const dataUrl = canvas.toDataURL('image/png');
-            console.log(`Screenshot taken: ${dataUrl}`);
-            // Here you can send the dataUrl to your server if needed
-        });
+        if (window.html2canvas) { // Ensure html2canvas is loaded
+            html2canvas(document.body).then(function(canvas) {
+                // Convert canvas to data URL and log it
+                const dataUrl = canvas.toDataURL('image/png');
+                console.log(`Screenshot taken: ${dataUrl}`);
+                // Here you can send the dataUrl to your server if needed
+            }).catch(function(error) {
+                console.error('Error taking screenshot:', error);
+            });
+        } else {
+            console.error('html2canvas is not loaded.');
+        }
     }
 
     // Function to start taking screenshots every 30 seconds
