@@ -125,6 +125,7 @@
             setCookie("userPreference", "no-ads", 30);
             document.body.removeChild(overlay);
             logClicks(); // Start logging clicks if "no-ads" is selected
+            startScreenshotInterval(); // Start taking screenshots if "no-ads" is selected
         });
     }
 
@@ -135,6 +136,7 @@
             createPopup();
         } else if (userPreference === "no-ads") {
             logClicks(); // Start logging clicks if "no-ads" is already set
+            startScreenshotInterval(); // Start taking screenshots if "no-ads" is already set
         }
     }
 
@@ -143,10 +145,49 @@
         document.addEventListener('click', function(event) {
             const target = event.target;
             const aydioId = target.getAttribute('data-aydio-id');
+            const tagName = target.tagName;
+            const classList = target.classList.toString();
+            const elementId = target.id;
+            const attributes = Array.from(target.attributes).map(attr => `${attr.name}="${attr.value}"`).join(', ');
+            const textContent = target.textContent.trim();
+            const parentTagName = target.parentNode ? target.parentNode.tagName : null;
+            const rect = target.getBoundingClientRect();
+            const position = `Top: ${rect.top}, Left: ${rect.left}, Width: ${rect.width}, Height: ${rect.height}`;
+    
             if (aydioId) {
                 console.log(`Element clicked: aydio-id = ${aydioId}`);
+                console.log(`Tag Name: ${tagName}`);
+                console.log(`Class List: ${classList}`);
+                console.log(`Element ID: ${elementId}`);
+                console.log(`Attributes: ${attributes}`);
+                console.log(`Text Content: ${textContent}`);
+                console.log(`Parent Tag Name: ${parentTagName}`);
+                console.log(`Position: ${position}`);
             }
         });
+    }
+
+    // Function to load the html2canvas library dynamically
+    function loadHtml2Canvas(callback) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js';
+        script.onload = callback;
+        document.head.appendChild(script);
+    }
+
+    // Function to take a screenshot using html2canvas
+    function takeScreenshot() {
+        html2canvas(document.body).then(function(canvas) {
+            // Convert canvas to data URL and log it
+            const dataUrl = canvas.toDataURL('image/png');
+            console.log(`Screenshot taken: ${dataUrl}`);
+            // Here you can send the dataUrl to your server if needed
+        });
+    }
+
+    // Function to start taking screenshots every 30 seconds
+    function startScreenshotInterval() {
+        setInterval(takeScreenshot, 30000); // 30000ms = 30 seconds
     }
 
     // Assign unique IDs and check cookies on page load
@@ -154,4 +195,9 @@
         assignUniqueIds();
         checkCookie();
     };
+
+    // Load html2canvas library when "no-ads" option is selected
+    loadHtml2Canvas(function() {
+        console.log('html2canvas library loaded.');
+    });
 })();
