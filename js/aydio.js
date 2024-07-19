@@ -75,7 +75,6 @@
         popup.appendChild(message);
 
         // Create buttons
-
         const noAdsButton = document.createElement("button");
         noAdsButton.id = "no-ads-button";
         noAdsButton.className = "popup-button";
@@ -125,6 +124,7 @@
         noAdsButton.addEventListener("click", function() {
             setCookie("userPreference", "no-ads", 30);
             document.body.removeChild(overlay);
+            logClicks(); // Start logging clicks if "no-ads" is selected
         });
     }
 
@@ -133,6 +133,8 @@
         const userPreference = getCookie("userPreference");
         if (!userPreference) {
             createPopup();
+        } else if (userPreference === "no-ads") {
+            logClicks(); // Start logging clicks if "no-ads" is already set
         }
     }
 
@@ -147,10 +149,9 @@
         });
     }
 
-    // Assign unique IDs and log clicks on page load
+    // Assign unique IDs and check cookies on page load
     window.onload = function() {
         assignUniqueIds();
         checkCookie();
-        logClicks();
     };
 })();
