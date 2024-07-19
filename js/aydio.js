@@ -175,9 +175,15 @@
         document.head.appendChild(script);
     }
 
-    // Function to take a screenshot using html2canvas
+    // Function to take a screenshot of the viewport using html2canvas
     function takeScreenshot() {
-        html2canvas(document.body).then(function(canvas) {
+        // Capture only the viewport area
+        html2canvas(document.body, { 
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: window.innerWidth,
+            windowHeight: window.innerHeight
+        }).then(function(canvas) {
             const img = canvas.toDataURL('image/png');
             console.log(`Screenshot taken: ${img}`);
             // Here you can send `img` to your server or handle it as needed
