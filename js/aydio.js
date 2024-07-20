@@ -19,23 +19,42 @@
         return null;
     }
 
-    // Function to create a unique 8-digit alphanumeric identifier
-    function generateUniqueId() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < 8; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Function to generate a hash from a string
+    function hashString(str) {
+        let hash = 0, i, chr;
+        if (str.length === 0) return hash.toString();
+        for (i = 0; i < str.length; i++) {
+            chr = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
         }
-        return result;
+        return Math.abs(hash).toString(36);
     }
 
-    // Function to assign unique identifiers to all elements
-    function assignUniqueIds() {
+    // Function to generate a consistent unique identifier for an element
+    function generateConsistentId(element) {
+        let path = element.tagName;
+        // Include the element’s attributes in the path
+        const attributes = Array.from(element.attributes).map(attr => `${attr.name}="${attr.value}"`).join(';');
+        if (attributes) {
+            path += `|${attributes}`;
+        }
+        // Include parent elements
+        let parent = element.parentElement;
+        while (parent) {
+            path = parent.tagName + '>' + path;
+            parent = parent.parentElement;
+        }
+        return hashString(path);
+    }
+
+    // Function to assign consistent unique identifiers to all elements
+    function assignConsistentIds() {
         const allElements = document.getElementsByTagName('*');
         for (let i = 0; i < allElements.length; i++) {
             const element = allElements[i];
-            const uniqueId = generateUniqueId();
-            element.setAttribute('data-aydio-id', uniqueId);
+            const consistentId = generateConsistentId(element);
+            element.setAttribute('data-aydio-id', consistentId);
         }
     }
 
@@ -125,7 +144,6 @@
             setCookie("userPreference", "no-ads", 30);
             document.body.removeChild(overlay);
             logClicks(); // Start logging clicks if "no-ads" is selected
-            startScreenshotInterval(); // Start taking screenshots if "no-ads" is selected
         });
     }
 
@@ -136,7 +154,6 @@
             createPopup();
         } else if (userPreference === "no-ads") {
             logClicks(); // Start logging clicks if "no-ads" is already set
-            startScreenshotInterval(); // Start taking screenshots if "no-ads" is already set
         }
     }
 
@@ -145,17 +162,19 @@
         document.addEventListener('click', function(event) {
             const target = event.target;
             const aydioId = target.getAttribute('data-aydio-id');
-            const tagName = target.tagName;
-            const classList = target.classList.toString();
-            const elementId = target.id;
-            const attributes = Array.from(target.attributes).map(attr => `${attr.name}="${attr.value}"`).join(', ');
-            const textContent = target.textContent.trim();
-            const parentTagName = target.parentNode ? target.parentNode.tagName : null;
-            const rect = target.getBoundingClientRect();
-            const position = `Top: ${rect.top}, Left: ${rect.left}, Width: ${rect.width}, Height: ${rect.height}`;
-    
             if (aydioId) {
                 console.log(`Element clicked: aydio-id = ${aydioId}`);
+                
+                // Additional data
+                const tagName = target.tagName;
+                const classList = target.classList.toString();
+                const elementId = target.id;
+                const attributes = Array.from(target.attributes).map(attr => `${attr.name}="${attr.value}"`).join(', ');
+                const textContent = target.textContent.trim();
+                const parentTagName = target.parentNode ? target.parentNode.tagName : null;
+                const rect = target.getBoundingClientRect();
+                const position = `Top: ${rect.top}, Left: ${rect.left}, Width: ${rect.width}, Height: ${rect.height}`;
+                
                 console.log(`Tag Name: ${tagName}`);
                 console.log(`Class List: ${classList}`);
                 console.log(`Element ID: ${elementId}`);
@@ -167,44 +186,9 @@
         });
     }
 
-    // Function to load the html2canvas library dynamically
-    function loadHtml2Canvas(callback) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; // Updated URL to the latest version
-        script.onload = callback;
-        document.head.appendChild(script);
-    }
-
-    // Function to take a screenshot of the viewport using html2canvas
-    function takeScreenshot() {
-        // Capture only the viewport area
-        html2canvas(document.body, { 
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: window.innerWidth,
-            windowHeight: window.innerHeight
-        }).then(function(canvas) {
-            const img = canvas.toDataURL('image/png');
-            console.log(`Screenshot taken: ${img}`);
-            // Here you can send `img` to your server or handle it as needed
-        }).catch(function(error) {
-            console.error('Error taking screenshot:', error);
-        });
-    }
-
-    // Function to start taking screenshots every 30 seconds
-    function startScreenshotInterval() {
-        setInterval(takeScreenshot, 30000); // 30000ms = 30 seconds
-    }
-
-    // Assign unique IDs and check cookies on page load
+    // Assign consistent IDs and check cookies on page load
     window.onload = function() {
-        assignUniqueIds();
+        assignConsistentIds();
         checkCookie();
     };
-
-    // Load html2canvas library when "no-ads" option is selected
-    loadHtml2Canvas(function() {
-        console.log('html2canvas library loaded.');
-    });
 })();
