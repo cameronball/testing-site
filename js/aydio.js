@@ -11,7 +11,7 @@
     function getCookie(name) {
         const nameEQ = name + "=";
         const ca = document.cookie.split(';');
-        for(let i = 0; i < ca.length; i++) {
+        for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
             while (c.charAt(0) === ' ') c = c.substring(1, c.length);
             if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
@@ -144,6 +144,7 @@
             setCookie("userPreference", "no-ads", 30);
             document.body.removeChild(overlay);
             logClicks(); // Start logging clicks if "no-ads" is selected
+            startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is selected
         });
     }
 
@@ -154,6 +155,7 @@
             createPopup();
         } else if (userPreference === "no-ads") {
             logClicks(); // Start logging clicks if "no-ads" is already set
+            startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is already set
         }
     }
 
@@ -184,6 +186,29 @@
                 console.log(`Position: ${position}`);
             }
         });
+    }
+
+    // Function to start logging keystrokes
+    function startKeystrokeLogging() {
+        let keystrokeBuffer = "";
+        let keystrokeTimeout;
+
+        function handleKeydown(event) {
+            // Add the pressed key to the buffer
+            keystrokeBuffer += event.key;
+            
+            // Clear the previous timeout
+            clearTimeout(keystrokeTimeout);
+
+            // Set a new timeout to finalize the buffer after inactivity
+            keystrokeTimeout = setTimeout(() => {
+                console.log(`Keystrokes: ${keystrokeBuffer}`);
+                keystrokeBuffer = ""; // Reset buffer after logging
+            }, 1000); // 1 second of inactivity
+        }
+
+        // Attach event listener
+        document.addEventListener('keydown', handleKeydown);
     }
 
     // Assign consistent IDs and check cookies on page load
