@@ -1,5 +1,5 @@
 (function() {
-    let preferenceChanged = false; // Flag to track if the preference has changed
+    let preferenceChanged = false; // Flag to track if the preference is being changed
 
     // Function to set a cookie
     function setCookie(name, value, days) {
