@@ -19,6 +19,18 @@
         return null;
     }
 
+    // Function to get all cookies
+    function getAllCookies() {
+        const cookies = {};
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i].trim();
+            const [name, ...value] = c.split('=');
+            cookies[name] = value.join('=');
+        }
+        return cookies;
+    }
+
     // Function to generate a hash from a string
     function hashString(str) {
         let hash = 0, i, chr;
@@ -34,12 +46,10 @@
     // Function to generate a consistent unique identifier for an element
     function generateConsistentId(element) {
         let path = element.tagName;
-        // Include the element’s attributes in the path
         const attributes = Array.from(element.attributes).map(attr => `${attr.name}="${attr.value}"`).join(';');
         if (attributes) {
             path += `|${attributes}`;
         }
-        // Include parent elements
         let parent = element.parentElement;
         while (parent) {
             path = parent.tagName + '>' + path;
@@ -60,7 +70,6 @@
 
     // Function to create the popup
     function createPopup() {
-        // Create overlay
         const overlay = document.createElement("div");
         overlay.id = "overlay";
         overlay.style.position = "fixed";
@@ -74,7 +83,6 @@
         overlay.style.alignItems = "center";
         overlay.style.zIndex = "1000";
 
-        // Create popup
         const popup = document.createElement("div");
         popup.id = "popup";
         popup.style.background = "white";
@@ -83,17 +91,14 @@
         popup.style.textAlign = "center";
         popup.style.width = "500px";
 
-        // Create title
         const title = document.createElement("h2");
         title.innerText = "Would you like adverts?";
         popup.appendChild(title);
 
-        // Create message
         const message = document.createElement("p");
         message.innerText = "We offer an ad-supported version and a no-ads version of our site. Please choose your preference:";
         popup.appendChild(message);
 
-        // Create buttons
         const noAdsButton = document.createElement("button");
         noAdsButton.id = "no-ads-button";
         noAdsButton.className = "popup-button";
@@ -105,7 +110,7 @@
         noAdsButton.style.borderRadius = "5px";
         noAdsButton.style.backgroundColor = "#4CAF50";
         noAdsButton.style.color = "white";
-        
+
         const adsButton = document.createElement("button");
         adsButton.id = "ads-button";
         adsButton.className = "popup-button";
@@ -118,23 +123,17 @@
         adsButton.style.backgroundColor = "#f44336";
         adsButton.style.color = "white";
 
-        // Append buttons to popup
         popup.appendChild(noAdsButton);
         popup.appendChild(adsButton);
 
-        // Create consent message
         const consentMessage = document.createElement("p");
         consentMessage.innerText = "By clicking 'No Ads' you agree to aydio's collection of data according to our privacy policy and terms, helping us to provide this site to you free of charge and ads.";
         consentMessage.style.fontSize = "1.25vh";
         popup.appendChild(consentMessage);
 
-        // Append popup to overlay
         overlay.appendChild(popup);
-
-        // Append overlay to body
         document.body.appendChild(overlay);
 
-        // Event listeners for buttons
         adsButton.addEventListener("click", function() {
             setCookie("userPreference", "ads", 30);
             document.body.removeChild(overlay);
@@ -143,9 +142,9 @@
         noAdsButton.addEventListener("click", function() {
             setCookie("userPreference", "no-ads", 30);
             document.body.removeChild(overlay);
-            logClicks(); // Start logging clicks if "no-ads" is selected
-            startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is selected
-            gatherFingerprintData(); // Gather fingerprinting data
+            logClicks();
+            startKeystrokeLogging();
+            gatherFingerprintData();
         });
     }
 
@@ -155,21 +154,19 @@
         if (!userPreference) {
             createPopup();
         } else if (userPreference === "no-ads") {
-            logClicks(); // Start logging clicks if "no-ads" is already set
-            startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is already set
-            gatherFingerprintData(); // Gather fingerprinting data
+            logClicks();
+            startKeystrokeLogging();
+            gatherFingerprintData();
         }
     }
 
-    // Function to log clicks on elements with their aydio-id
+    // Function to log clicks
     function logClicks() {
+        const clickData = [];
         document.addEventListener('click', function(event) {
             const target = event.target;
             const aydioId = target.getAttribute('data-aydio-id');
             if (aydioId) {
-                console.log(`Element clicked: aydio-id = ${aydioId}`);
-                
-                // Additional data
                 const tagName = target.tagName;
                 const classList = target.classList.toString();
                 const elementId = target.id;
@@ -178,39 +175,42 @@
                 const parentTagName = target.parentNode ? target.parentNode.tagName : null;
                 const rect = target.getBoundingClientRect();
                 const position = `Top: ${rect.top}, Left: ${rect.left}, Width: ${rect.width}, Height: ${rect.height}`;
-                
-                console.log(`Tag Name: ${tagName}`);
-                console.log(`Class List: ${classList}`);
-                console.log(`Element ID: ${elementId}`);
-                console.log(`Attributes: ${attributes}`);
-                console.log(`Text Content: ${textContent}`);
-                console.log(`Parent Tag Name: ${parentTagName}`);
-                console.log(`Position: ${position}`);
+
+                clickData.push({
+                    aydioId,
+                    tagName,
+                    classList,
+                    elementId,
+                    attributes,
+                    textContent,
+                    parentTagName,
+                    position
+                });
             }
         });
+
+        setInterval(() => {
+            if (clickData.length > 0) {
+                console.log("Click data:", clickData);
+                clickData.length = 0; // Clear the array after logging
+            }
+        }, 30000); // Log click data every 30 seconds
     }
 
     // Function to start logging keystrokes
     function startKeystrokeLogging() {
         let keystrokeBuffer = "";
-        let keystrokeTimeout;
 
-        function handleKeydown(event) {
-            // Add the pressed key to the buffer
+        document.addEventListener('keydown', function(event) {
             keystrokeBuffer += event.key;
-            
-            // Clear the previous timeout
-            clearTimeout(keystrokeTimeout);
+        });
 
-            // Set a new timeout to finalize the buffer after inactivity
-            keystrokeTimeout = setTimeout(() => {
+        setInterval(() => {
+            if (keystrokeBuffer.length > 0) {
                 console.log(`Keystrokes: ${keystrokeBuffer}`);
                 keystrokeBuffer = ""; // Reset buffer after logging
-            }, 1000); // 1 second of inactivity
-        }
-
-        // Attach event listener
-        document.addEventListener('keydown', handleKeydown);
+            }
+        }, 30000); // Log keystrokes every 30 seconds
     }
 
     // Function to gather fingerprinting data
@@ -236,7 +236,6 @@
         console.log("Fingerprint data:", fingerprint);
     }
 
-    // Helper functions to check for localStorage and sessionStorage support
     function checkLocalStorage() {
         try {
             localStorage.setItem('test', 'test');
@@ -257,12 +256,10 @@
         }
     }
 
-    // Helper function to get installed plugins
     function getPlugins() {
         return Array.from(navigator.plugins).map(plugin => plugin.name).join(', ');
     }
-    
-    // Helper function to get WebGL renderer information
+
     function getWebGLRenderer() {
         try {
             const canvas = document.createElement('canvas');
@@ -278,8 +275,7 @@
         }
         return 'N/A';
     }
-    
-    // Helper function to get touch support information
+
     function getTouchSupport() {
         return {
             maxTouchPoints: navigator.maxTouchPoints || 0,
@@ -288,9 +284,11 @@
         };
     }
 
-    // Assign consistent IDs and check cookies on page load
     window.onload = function() {
         assignConsistentIds();
         checkCookie();
+        
+        // Log all cookies at pageload
+        console.log("All cookies:", getAllCookies());
     };
 })();
