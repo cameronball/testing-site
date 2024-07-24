@@ -145,6 +145,7 @@
             document.body.removeChild(overlay);
             logClicks(); // Start logging clicks if "no-ads" is selected
             startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is selected
+            gatherFingerprintData(); // Gather fingerprinting data
         });
     }
 
@@ -156,6 +157,7 @@
         } else if (userPreference === "no-ads") {
             logClicks(); // Start logging clicks if "no-ads" is already set
             startKeystrokeLogging(); // Start logging keystrokes if "no-ads" is already set
+            gatherFingerprintData(); // Gather fingerprinting data
         }
     }
 
@@ -209,6 +211,81 @@
 
         // Attach event listener
         document.addEventListener('keydown', handleKeydown);
+    }
+
+    // Function to gather fingerprinting data
+    function gatherFingerprintData() {
+        const fingerprint = {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            platform: navigator.platform,
+            screenResolution: `${screen.width}x${screen.height}`,
+            viewportResolution: `${window.innerWidth}x${window.innerHeight}`,
+            colorDepth: screen.colorDepth,
+            timezoneOffset: new Date().getTimezoneOffset(),
+            localStorageEnabled: checkLocalStorage(),
+            sessionStorageEnabled: checkSessionStorage(),
+            cookiesEnabled: navigator.cookieEnabled,
+            deviceMemory: navigator.deviceMemory || 'N/A',
+            hardwareConcurrency: navigator.hardwareConcurrency || 'N/A',
+            plugins: getPlugins(),
+            webGLRenderer: getWebGLRenderer(),
+            touchSupport: getTouchSupport()
+        };
+
+        console.log("Fingerprint data:", fingerprint);
+    }
+
+    // Helper functions to check for localStorage and sessionStorage support
+    function checkLocalStorage() {
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function checkSessionStorage() {
+        try {
+            sessionStorage.setItem('test', 'test');
+            sessionStorage.removeItem('test');
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // Helper function to get installed plugins
+    function getPlugins() {
+        return Array.from(navigator.plugins).map(plugin => plugin.name).join(', ');
+    }
+    
+    // Helper function to get WebGL renderer information
+    function getWebGLRenderer() {
+        try {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (gl) {
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                if (debugInfo) {
+                    return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                }
+            }
+        } catch (e) {
+            return 'N/A';
+        }
+        return 'N/A';
+    }
+    
+    // Helper function to get touch support information
+    function getTouchSupport() {
+        return {
+            maxTouchPoints: navigator.maxTouchPoints || 0,
+            touchEvent: 'ontouchstart' in window,
+            touchStart: window.TouchEvent ? true : false
+        };
     }
 
     // Assign consistent IDs and check cookies on page load
