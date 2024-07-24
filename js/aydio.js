@@ -145,6 +145,7 @@
             logClicks();
             startKeystrokeLogging();
             gatherFingerprintData();
+            console.log("All cookies:", getAllCookies());
         });
     }
 
@@ -157,6 +158,7 @@
             logClicks();
             startKeystrokeLogging();
             gatherFingerprintData();
+            console.log("All cookies:", getAllCookies());
         }
     }
 
@@ -287,8 +289,5 @@
     window.onload = function() {
         assignConsistentIds();
         checkCookie();
-        
-        // Log all cookies at pageload
-        console.log("All cookies:", getAllCookies());
     };
 })();
