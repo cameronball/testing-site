@@ -170,13 +170,15 @@
         }
     }
 
-    // Function to log clicks
+    // Function to log clicks on elements with their aydio-id
     function logClicks() {
-        const clickData = [];
         document.addEventListener('click', function(event) {
             const target = event.target;
             const aydioId = target.getAttribute('data-aydio-id');
             if (aydioId) {
+                console.log(`Element clicked: aydio-id = ${aydioId}`);
+                
+                // Additional data
                 const tagName = target.tagName;
                 const classList = target.classList.toString();
                 const elementId = target.id;
@@ -185,26 +187,16 @@
                 const parentTagName = target.parentNode ? target.parentNode.tagName : null;
                 const rect = target.getBoundingClientRect();
                 const position = `Top: ${rect.top}, Left: ${rect.left}, Width: ${rect.width}, Height: ${rect.height}`;
-
-                clickData.push({
-                    aydioId,
-                    tagName,
-                    classList,
-                    elementId,
-                    attributes,
-                    textContent,
-                    parentTagName,
-                    position
-                });
+                
+                console.log(`Tag Name: ${tagName}`);
+                console.log(`Class List: ${classList}`);
+                console.log(`Element ID: ${elementId}`);
+                console.log(`Attributes: ${attributes}`);
+                console.log(`Text Content: ${textContent}`);
+                console.log(`Parent Tag Name: ${parentTagName}`);
+                console.log(`Position: ${position}`);
             }
         });
-
-        setInterval(() => {
-            if (clickData.length > 0) {
-                console.log("Click data:", clickData);
-                clickData.length = 0; // Clear the array after logging
-            }
-        }, 30000); // Log click data every 30 seconds
     }
 
     // Function to start logging keystrokes
